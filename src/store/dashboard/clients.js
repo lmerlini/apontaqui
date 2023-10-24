@@ -79,6 +79,21 @@ const actions = {
             }
         });
     },
+
+    async softDeleteClients({ commit }, id) {
+
+        console.log(id);
+        return new Promise(async (resolve, reject) => {
+            try {
+                await ApiService.delete(`/${URL}/softdelete`, { data: id });
+                commit('DELETE_CLIENT', id);
+                resolve();
+            } catch (error) {
+                console.error('Error deleting client:', error);
+                reject(error);
+            }
+        });
+    },
 }
 
 const mutations = {

@@ -85,8 +85,6 @@ class ApiService {
             this.unmount401Interceptor()
         }
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-
     }
 
     static async removeHeader() {

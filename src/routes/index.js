@@ -19,7 +19,7 @@ const routes = [
     {
         path: '/dashboard',
         name: 'Aponta aqui',
-        component: () => import('@/views/private/Dashboard.vue'),
+        component: () => import('@/views/private/DefaultLayout.vue'),
         meta: {
             requiresAuth: true,
         },
@@ -33,12 +33,12 @@ const routes = [
             {
                 path: 'clientes',
                 name: 'Clientes',
-                component: () => import('@/views/private/Clientes.vue')
+                component: () => import('@/views/private/clients/Clientes.vue')
             },
             {
                 path: 'usuarios',
                 name: 'Usuários',
-                component: () => import('@/views/private/Usuarios.vue')
+                component: () => import('@/views/private/users/Usuarios.vue')
             }, {
                 path: 'apontamentos',
                 name: 'Apontamentos',
@@ -52,7 +52,6 @@ const routes = [
             },
         ]
     },
-
 ]
 
 const router = new createRouter({

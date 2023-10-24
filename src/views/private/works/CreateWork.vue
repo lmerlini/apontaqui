@@ -24,7 +24,7 @@
                     <!-- refeição -->
                     <v-col cols="12" md="2">
                         <v-text-field :rules="[rules.required]" type="number" v-model="apontamento.break_duration"
-                            label="Duração da Pausa em Minutos" />
+                            label="Pausa em Minutos" />
                     </v-col>
                     <!-- horário final -->
                     <v-col cols="12" md="4">

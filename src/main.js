@@ -7,8 +7,8 @@ import ApiService from './api/_api'
 import store from './store';
 import tokenService from './services/_token'
 import VueSweetalert2 from '@/plugins/sweetalert'
-import { QuillEditor } from '@/plugins/quill'
-
+import { QuillEditor } from '@/plugins/texteditor'
+import pdfMakePlugin from './plugins/pdfmake';
 
 //Service Requests
 ApiService.init(import.meta.env.VITE_BASE_URL)
@@ -21,10 +21,11 @@ if (tokenService.getToken()) {
 const app = createApp(App)
 
 // import plugins
+app.use(VueSweetalert2)
 app.use(router)
 app.use(store)
 app.use(vuetify)
-app.use(VueSweetalert2)
+app.use(pdfMakePlugin);
 app.component('QuillEditor', QuillEditor)
 
 

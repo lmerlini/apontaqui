@@ -21,7 +21,7 @@ const actions = {
                 commit('SET_USER', response.data);
             }
         } catch (error) {
-                        
+
             commit('CLEAR_TOKEN');
             commit('CLEAR_REFRESH_TOKEN');
             ApiService.removeHeader();
@@ -32,7 +32,6 @@ const actions = {
     async login({ commit, dispatch }, credentials) {
         try {
             const { data } = await ApiService.post('/auth/login', credentials);
-            console.log(data);
             // Salvando tokens
             commit('SET_TOKEN', data.token);
             commit('SET_REFRESH_TOKEN', data.refreshToken);
@@ -42,18 +41,20 @@ const actions = {
 
         } catch (error) {
             console.error('Error during login:', error);
+            throw error
         }
     },
 
     async logout({ commit }) {
         try {
-            await ApiService.post('/auth/logout');          
+            await ApiService.post('/auth/logout');
             commit('CLEAR_TOKEN');
             commit('CLEAR_REFRESH_TOKEN');
             ApiService.removeHeader();
 
         } catch (error) {
             console.error('Error during logout:', error);
+            throw error
         }
     },
 

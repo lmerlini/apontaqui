@@ -2,10 +2,8 @@
     <FormDefault title="Listagem de Clientes">
         <template #content>
 
-            <v-data-table :headers="headers" 
-            :loading="isLoading"
-            :items="clients" :sort-by="[{ key: 'name', order: 'asc' }]"
-                class="elevation-1">
+            <v-data-table :headers="headers" :loading="isLoading" :items="clients" v-model="selectedClients"
+                :sort-by="[{ key: 'name', order: 'asc' }]" class="elevation-1">
                 <template #top>
                     <v-toolbar flat>
                         <v-toolbar-title>Clientes</v-toolbar-title>
@@ -15,6 +13,7 @@
 
                         <v-dialog v-model="dialog" max-width="90%">
                             <template #activator="{ props }">
+                                <v-btn class="bg-error" @click="deleteSelectedClients">Excluir Selecionados</v-btn>
                                 <v-btn class="mb-2" v-bind="props">
                                     Novo Cliente
                                 </v-btn>
@@ -34,15 +33,18 @@
                                                 <v-text-field v-model="editedItem.responsible"
                                                     label="Responsável"></v-text-field>
                                             </v-col>
-                                            <v-col cols="12" sm="12" md="6">
+                                            <v-col cols="12" sm="12" md="4">
                                                 <v-text-field v-model="editedItem.email"
                                                     label="E-mail para contato"></v-text-field>
                                             </v-col>
-                                            <v-col cols="12" sm="12" md="6">
+                                            <v-col cols="12" sm="12" md="4">
                                                 <v-text-field v-model="editedItem.phone"
                                                     label="Telefone (99)99999-9999"></v-text-field>
                                             </v-col>
-
+                                            <v-col cols="12" sm="12" md="4">
+                                                <v-text-field v-model="editedItem.cnpj"
+                                                    label="CNPJ"></v-text-field>
+                                            </v-col>
                                         </v-row>
                                     </v-container>
                                 </v-card-text>
@@ -82,13 +84,13 @@
   
 
 <script>
-
 // TODO : refatorar código abstrair components
 // TODO : refatorar toda a comunicação de alertas
 // TODO : refatorar a comunicação de crud
 
 import { VDataTable } from 'vuetify/labs/VDataTable'
 import FormDefault from '@/components/FormDefault.vue'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
     components: {
@@ -100,11 +102,12 @@ export default {
     },
 
     data: () => ({
+        selectedClients: [],
         clients: [],
         isLoading: false,
         dialog: false,
-        dialogDelete: false,
         headers: [
+            { text: '', value: 'data-table-select', sortable: false },
             { title: 'Cliente', key: 'name', },
             { title: 'Responsável', key: 'responsible' },
             { title: 'E-mail', key: 'email' },
@@ -127,6 +130,8 @@ export default {
     }),
 
     computed: {
+        ...mapGetters({ getClients: 'clients/clients' }),
+
         formTitle() {
             return this.editedIndex === -1 ? 'Novo Cliente' : 'Editar'
         },
@@ -139,11 +144,13 @@ export default {
     },
 
     methods: {
+        ...mapActions('clients', ['fetchClients', 'addClient', 'softDeleteClients']),
+
         async initializeTable() {
             this.isLoading = true;
             try {
-                await this.$store.dispatch('clients/fetchClients');
-                this.clients = this.$store.getters['clients/clients'];
+                await this.fetchClients();
+                this.clients = this.getClients;
             } catch (error) {
                 console.error('Erro ao atualizar o cliente no componente:', error);
                 this.$swal('Oops!', 'Ocorreu um erro ao buscar clientes, tente novamente mais tarde!!', 'error');
@@ -186,7 +193,6 @@ export default {
             })
         },
 
-
         async updateClient() {
             try {
                 await this.$store.dispatch('clients/updateClient', this.editedItem);
@@ -198,7 +204,7 @@ export default {
 
         async createClient() {
             try {
-                await this.$store.dispatch('clients/addClient', this.editedItem);
+                await this.addClient(this.editedItem);
                 this.$swal('Cadastrado', 'Cliente Cadastrado com sucesso!', 'success');
             } catch (error) {
                 this.$swal('Oops!', 'Ocorreu um erro ao cadastrar o cliente.', 'error');
@@ -231,6 +237,40 @@ export default {
             }
 
             this.isLoading = false;
+        },
+
+        async deleteSelectedClients() {
+            if (!this.selectedClients.length) return;
+
+            this.$swal.fire({
+                title: 'Você tem certeza?',
+                text: `Deseja excluir ${this.selectedClients.length} clientes?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sim, delete!',
+                cancelButtonText: 'Cancelar'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    this.isLoading = true;
+                    try {
+                        const payload = { id: this.selectedClients.map(client => client) };
+                        await this.softDeleteClients(payload);
+                        this.$swal('Deletados!', `${this.selectedClients.length} clientes foram excluídos com sucesso.`, 'success');
+                        await this.initializeTable();
+                        this.selectedClients = [];
+                    } catch (error) {
+
+                        const detail = error.response.data.error.name
+                        this.$swal.fire({
+                            title: 'Oops!',
+                            text: 'Ocorreu um erro ao deletar os clientes. ',
+                            icon: 'error',
+                            footer: `Detalhes do erro: <b style='color:red;'> ${detail} </b>`
+                        });
+                    }
+                    this.isLoading = false;
+                }
+            });
         }
     },
 }

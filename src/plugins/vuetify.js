@@ -43,7 +43,6 @@ const themeDark = {
 }
 
 
-
 const vuetify = createVuetify({
     components: {
         ...components,
