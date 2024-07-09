@@ -1,22 +1,21 @@
 import ApiService from "@/api/_api";
 
-const URL = 'works'
+const URL = 'projects'
 
 const state = {
-    works: [],
-    workByClientId: null,
+    projects: [],
 }
 
 const getters = {
-    works: state => state.works,
+    projects: state => state.projects,
 }
 
 const actions = {
-    async fetchWork({ commit }) {
+    async fetchProjects({ commit }) {
         return new Promise(async (resolve, reject) => {
             try {
                 const response = await ApiService.get(`/${URL}/list`);
-                commit('SET_WORK', response.data);
+                commit('SET_PROJECT', response.data);
                 resolve()
             } catch (error) {
                 reject(error)
@@ -24,11 +23,11 @@ const actions = {
         })
     },
 
-    async fetchWorkByClientId({ commit }, client_id) {
+    async addProject({ commit }, projectData) {
         return new Promise(async (resolve, reject) => {
             try {
-                const response = await ApiService.get(`/${URL}/list/${client_id}`);
-                commit('SET_WORK_BY_CLIENT_ID', response.data);
+                const response = await ApiService.post(`/${URL}/create`, projectData);
+                commit('ADD_NEW_PROJECT', response.data);
                 resolve()
             } catch (error) {
                 reject(error)
@@ -36,21 +35,19 @@ const actions = {
         })
     },
 
-    async addWork({ commit }, workData) {
+    async updateProject({ commit }, projectData) {
         return new Promise(async (resolve, reject) => {
             try {
-                const response = await ApiService.post(`/${URL}/create`, workData);
-                commit('ADD_NEW_WORK', response.data);
+                const response = await ApiService.put(`/${URL}/update`, projectData);
+                commit('UPDATE_PROJECT', response.data);
                 resolve()
             } catch (error) {
                 reject(error)
             }
         })
-
     },
 
-
-    async deleteWork({ commit }, data) {
+    async deleteProject({ commit }, data) {
         return new Promise(async (resolve, reject) => {
             try {
                 await ApiService.delete(`/${URL}/delete`, data);
@@ -63,21 +60,23 @@ const actions = {
 }
 
 const mutations = {
-
-    SET_WORK(state, works) {
-        state.works = works;
-    },
-    SET_WORK_BY_CLIENT_ID(state, client) {
-        state.workByClientId = client;
-    },
-    ADD_NEW_WORK(state, work) {
-        state.works.push(work);
+    SET_PROJECT(state, projects) {
+        state.projects = projects;
     },
 
+    ADD_NEW_PROJECT(state, project) {
+        state.projects.push(project);
+    },
 
+    UPDATE_PROJECT(state, project) {
+        const index = state.projects.findIndex(p => p.id === project.id);
+        if (index !== -1) {
+            state.projects.splice(index, 1, project);
+        }
+    }
 }
 
-const works = {
+const projects = {
     namespaced: true,
     state,
     getters,
@@ -85,5 +84,5 @@ const works = {
     mutations
 }
 
-export default works;
-export { works };
+export default projects;
+export { projects };

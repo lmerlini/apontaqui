@@ -3,14 +3,28 @@
         <template #content>
             <v-form ref="form">
                 <v-row class="mb-5">
+
+                    <!-- título atividade -->
+                    <v-col cols="12" md="6">
+                        <v-text-field :rules="[rules.required]" label="Título Atividade"
+                            v-model="apontamento.name"></v-text-field>
+                    </v-col>
+
                     <!-- Nome CLiente -->
                     <v-col cols="12" md="6">
                         <v-select :rules="[rules.required]" clearable label="Cliente" v-model="apontamento.client_id"
                             item-title="text" item-value="value" :items="clientOptions">
 
                         </v-select>
-
                     </v-col>
+
+                    <!-- Projeto -->
+                    <v-col cols="12" md="6">
+                        <v-select :rules="[rules.required]" clearable label="Projeto" v-model="apontamento.project_id"
+                            item-title="text" item-value="value" :items="projectOptions">
+                        </v-select>
+                    </v-col>
+
                     <!-- Inicio do trabalho -->
                     <v-col cols="12" md="6">
                         <v-text-field :rules="[rules.required, rules.validDate]" type="date" clearable
@@ -23,7 +37,7 @@
                     </v-col>
                     <!-- refeição -->
                     <v-col cols="12" md="2">
-                        <v-text-field :rules="[rules.required]" type="number" v-model="apontamento.break_duration"
+                        <v-text-field :rules="[rules.required]" type="number" v-model="apontamento.break_time"
                             label="Duração da Pausa em Minutos" />
                     </v-col>
                     <!-- horário final -->
@@ -40,7 +54,7 @@
                         </v-btn>
                     </v-col>
                     <v-col cols="12" md="12" class="quill">
-                        <QuillEditor theme="snow" v-model:content="apontamento.agenda_description" content-type="html" />
+                        <QuillEditor theme="snow" v-model:content="apontamento.description" content-type="html" />
                     </v-col>
                 </v-row>
 
@@ -60,7 +74,7 @@
     </form-default>
 </template>
 
-    
+
 <script>
 import { mapGetters, mapActions } from 'vuex';
 import FormDefault from '@/components/FormDefault.vue'
@@ -70,15 +84,27 @@ export default {
     components: {
         FormDefault,
     },
+    async created() {
+        try {
+            await this.fetchClients();
+            await this.fetchProjects();
+            this.handleInputs();
+        } catch (error) {
+            this.$swal('Oops!', 'Ocorreu um erro ao carregar dados de clientes, tente novamente mais tarde!!', 'error');
+        }
+    },
     data: () => ({
         clientOptions: [],
+        projectOptions: [],
         apontamento: {
+            name: '',
             client_id: null,
+            project_id: null,
             service_date: '',
             start_time: '',
-            break_duration: 0,
+            break_time: 0,
             end_time: '',
-            agenda_description: ''
+            description: ''
         },
         rules: {
             required: value => !!value || 'Este campo é obrigatório.',
@@ -88,6 +114,7 @@ export default {
     computed: {
         ...mapGetters('clients', ['clients']),
         ...mapGetters('works', ['works']),
+        ...mapGetters('projects', ['projects']),
 
         totalHours() {
             if (this.apontamento.start_time && this.apontamento.end_time) {
@@ -98,7 +125,7 @@ export default {
                 const endDate = new Date(0, 0, 0, endHour, endMinute);
 
                 const differenceMs = endDate - startDate;
-                const breakMs = this.apontamento.break_duration * 60 * 1000; // Convertendo pausa em minutos para milissegundos
+                const breakMs = this.apontamento.break_time * 60 * 1000; // Convertendo pausa em minutos para milissegundos
 
                 const totalMs = differenceMs - breakMs;
                 const totalHours = Math.floor(totalMs / (1000 * 60 * 60));
@@ -110,31 +137,41 @@ export default {
             return '00:00';
         }
     },
-    async created() {
-        try {
-            await this.fetchClients();
-            this.handleClients();
-        } catch (error) {
-            this.$swal('Oops!', 'Ocorreu um erro ao carregar dados de clientes, tente novamente mais tarde!!', 'error');
-        }
-    },
     methods: {
         ...mapActions('clients', ['fetchClients']),
         ...mapActions('works', ['fetchWork', 'addWork']),
+        ...mapActions('projects', ['fetchProjects']),
 
-        handleClients() {
+        handleInputs() {
             this.clientOptions = this.clients.map(c => ({ value: c.id, text: c.name }));
+            this.projectOptions = this.projects.map(p => ({ value: p.id, text: p.name }));
+        },
+
+        convertMinuteToHour(minute) {
+            const hours = Math.floor(minute / 60);
+            const minutes = minute % 60;
+            
+            const hourFormatted = String(hours).padStart(2,'0'); 
+            const minuteFormatted = String(minutes).padStart(2,'0'); 
+
+            return `${hourFormatted}:${minuteFormatted}`
+
+
         },
 
         async handleForm() {
             const { valid } = await this.$refs.form.validate();
+
             if (valid) {
-                if (!this.apontamento.agenda_description && !this.apontamento.agenda_description.trim().length > 0) {
+                if (!this.apontamento.description && !this.apontamento.description.trim().length > 0) {
                     this.$swal('Ação Proibida!', 'Não é possível salvar atividade sem Descrição!', 'error');
                     return
                 }
                 this.apontamento.service_date = addCurrentTimeToDate(this.apontamento.service_date)
                 try {
+
+                    this.apontamento.break_time = this.convertMinuteToHour(this.apontamento.break_time)
+
                     await this.addWork(this.apontamento);
                     this.$swal('Sucesso!', 'Atividade inserida com sucesso.', 'success');
                     this.resetForm()
@@ -150,18 +187,20 @@ export default {
 
         resetForm() {
             this.apontamento = {
+                name: '',
                 client_id: null,
+                project_id: null,
                 service_date: '',
                 start_time: '',
-                break_duration: 0,
+                break_time: 0,
                 end_time: '',
-                agenda_description: ''
+                description: ''
             };
         },
     }
 };
 </script>
-  
+
 <style scoped>
 .quill {
     height: 23rem !important;

@@ -14,7 +14,7 @@ const getters = {
 }
 
 const actions = {
-    async fetchUser({ commit, state }) {
+    async fetchUser({ commit, state }) {    
         try {
             if (tokenService.getToken() && !state.user) {
                 const response = await ApiService.get('/users/me');

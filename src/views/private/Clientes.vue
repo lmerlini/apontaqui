@@ -31,7 +31,7 @@
                                                 <v-text-field v-model="editedItem.name" label="Nome Cliente"></v-text-field>
                                             </v-col>
                                             <v-col cols="12" sm="12" md="6">
-                                                <v-text-field v-model="editedItem.responsible"
+                                                <v-text-field v-model="editedItem.contact"
                                                     label="Responsável"></v-text-field>
                                             </v-col>
                                             <v-col cols="12" sm="12" md="6">
@@ -106,7 +106,7 @@ export default {
         dialogDelete: false,
         headers: [
             { title: 'Cliente', key: 'name', },
-            { title: 'Responsável', key: 'responsible' },
+            { title: 'Responsável', key: 'contact' },
             { title: 'E-mail', key: 'email' },
             { title: 'Telefone', key: 'phone' },
             { title: 'Actions', key: 'actions', sortable: false },
@@ -114,13 +114,13 @@ export default {
         editedIndex: -1,
         editedItem: {
             name: '',
-            responsible: '',
+            contact: '',
             email: '',
             phone: ''
         },
         defaultItem: {
             name: '',
-            responsible: '',
+            contact: '',
             email: '',
             phone: ''
         },

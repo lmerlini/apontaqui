@@ -9,8 +9,8 @@
         <template #content>
             <v-data-table :headers="headers" :items="dataWorks" hide-actions class="elevation-1" select-all
                 :loading="loading" :search="search">
-            
-            
+
+
             </v-data-table>
         </template>
     </FormDefault>
@@ -38,7 +38,7 @@ export default {
             loading: false,
             dataWorks: [],
             headers: [
-                { title: 'Cliente', key: 'name', },
+                { title: 'Projeto', key: 'name', },
                 { title: 'Data Trabalho', key: 'service_date' },
                 { title: 'Inicio Jornada', key: 'start_time' },
                 { title: 'Fim Jornada', key: 'end_time' },
@@ -50,19 +50,14 @@ export default {
     computed: {
         ...mapGetters({
             storeWorks: 'works/works',
-            storeClients: 'clients/clients'
         }),
     },
     methods: {
         ...mapActions('works', ['fetchWork']),
-        ...mapActions('clients', ['fetchClients']),
-
-
         async fetchData() {
             try {
                 await Promise.all([
                     this.fetchWork(),
-                    this.fetchClients()
                 ])
                 this.handleTable()
             } catch (error) {
@@ -71,21 +66,19 @@ export default {
         },
 
         handleTable() {
-
             console.log(this.storeWorks);
-            const mappedData = this.storeWorks.map(work => {
-                const client = this.storeClients.find(client => client.id === work.client_id);
-                return {
-                    name: client ? client.name : '',
-                    service_date: formatDateBR(work.service_date),
-                    start_time: work.start_time,
-                    end_time: work.end_time,
-                    break_duration: work.break_duration,
-                    daily_total: work.daily_total
-                };
-            });
 
-            this.dataWorks = mappedData;
+            this.dataWorks = this.storeWorks.map(w => {
+                return {
+                    name: w.project.name,
+                    service_date: formatDateBR(w.service_date),
+                    start_time: w.start_time,
+                    end_time: w.end_time,
+                    break_duration: w.break_time,
+                    daily_total: w.daily_total
+                }
+            })
+            
         }
     }
 }

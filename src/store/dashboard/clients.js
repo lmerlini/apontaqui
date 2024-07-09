@@ -1,6 +1,6 @@
 import ApiService from "@/api/_api";
 
-const URL = 'clients'
+const URL = 'customers'
 
 const state = {
     clients: [],
@@ -17,7 +17,7 @@ const actions = {
     async fetchClients({ commit }) {
         return new Promise(async (resolve, reject) => {
             try {
-                const response = await ApiService.get(`/${URL}/`);
+                const response = await ApiService.get(`/${URL}/list`);
                 commit('SET_CLIENTS', response.data);
                 resolve()
             } catch (error) {

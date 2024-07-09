@@ -39,7 +39,13 @@ const routes = [
                 path: 'usuarios',
                 name: 'Usuários',
                 component: () => import('@/views/private/Usuarios.vue')
-            }, {
+            }, 
+            {
+                path: 'projetos',
+                name: 'Project',
+                component: () => import('@/views/private/projects/Project.vue')
+            }, 
+            {
                 path: 'apontamentos',
                 name: 'Apontamentos',
                 // component: () => import('@/views/private/works/Apontamentos.vue'),

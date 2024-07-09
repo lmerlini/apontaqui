@@ -19,6 +19,7 @@ const toggleTheme = () => {
 };
 
 
+// TODO : IMPLEMENTAR LOGOUT
 </script>
 
 <template>
@@ -51,7 +52,7 @@ const toggleTheme = () => {
                 {{ currentTheme === "dark" ? "mdi-lightbulb-off" : "mdi-lightbulb" }}
             </v-icon>
         </v-btn>
-        <v-btn @click="logout">
+        <v-btn >
             <v-icon>
                 mdi-logout
             </v-icon>
